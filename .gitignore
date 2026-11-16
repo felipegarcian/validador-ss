@@ -1,0 +1,14 @@
+# Datos reales: nunca al repositorio
+datos_reales/
+*.pdf
+!docs/**/*.pdf
+
+# Credenciales
+.env
+
+# Salidas y cachés
+demo_salida/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.venv/

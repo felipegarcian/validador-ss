@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "validador-ss"
+version = "0.1.0"
+description = "Validador de soportes de pago de seguridad social"
+requires-python = ">=3.10"
+dependencies = [
+  "pydantic>=2",
+  "openpyxl>=3.1",
+  "holidays>=0.50",
+  "pyyaml>=6",
+  "rapidfuzz>=3",
+]
+
+[project.optional-dependencies]
+pdf = ["pdfplumber>=0.11"]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

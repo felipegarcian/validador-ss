@@ -1,0 +1,12 @@
+# Reglas del mes. Editables sin tocar código.
+reglas:
+  tolerancia: 1000        # pesos; confirmado por la empresa
+  dia_habil_corte: 5      # día hábil límite para entregar el soporte
+  dia_clave: 15           # fecha clave del mes para el tablero
+
+# Nombres de las columnas en el Excel de liquidación. Ajustar cuando llegue el archivo real.
+columnas:
+  cedula: cedula
+  nombre: nombre
+  devengado: devengado
+  valor_esperado: valor_esperado
