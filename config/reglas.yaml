@@ -1,12 +1,30 @@
-# Reglas del mes. Editables sin tocar código.
+# Parámetros del proceso (procedimiento AZA v3.0, sección 2). Editables sin tocar código.
 reglas:
-  tolerancia: 1000        # pesos; confirmado por la empresa
-  dia_habil_corte: 5      # día hábil límite para entregar el soporte
-  dia_clave: 15           # fecha clave del mes para el tablero
+  porcentaje_ibc: 0.40        # IBC requerido = BASE RTTE × 40 %
+  smmlv: 1750905              # 2026; actualizar cada enero
+  tolerancia_abajo: 1000      # hasta $1.000 por debajo = OK; cualquier peso por encima = PAGO DE MÁS
+  tarifa_pension: 0.16
+  tarifa_salud: 0.125
+  tarifa_arl:                 # en porcentaje
+    I: 0.522                  # administrativos
+    II: 1.044                 # asesores
+  tipo_cotizante: "59"
+  especial_a_revision: true   # la tabla dice "marcar siempre como revisión manual" (por confirmar)
+  dia_habil_corte: 5          # 5.º día hábil del mes N+1, sin sábados, domingos ni festivos
 
-# Nombres de las columnas en el Excel de liquidación. Ajustar cuando llegue el archivo real.
+# Encabezados de la Base para SS: se buscan por prefijo, sin tildes ni mayúsculas.
 columnas:
-  cedula: cedula
-  nombre: nombre
-  devengado: devengado
-  valor_esperado: valor_esperado
+  nombre: [asesor, nombre]
+  cedula: [cedula]
+  correo: [correo]
+  riesgo: [tipo de riesgo]
+  especial: [especial]
+  base_rtte: [base rtte]
+  ibc_pagado: [ibc pagado]
+  nuevo_pension: [nuevo pension]
+  nuevo_salud: [nuevo salud]
+  estado: [estado, observaciones]
+
+asuntos:
+  planilla: "Seguridad Social {mes}"
+  ajuste: "Ajuste Seguridad Social {mes}"

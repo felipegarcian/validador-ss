@@ -1,6 +1,10 @@
 """PDF con contraseña: la clave suele ser la cédula de la persona.
 
+En los insumos de AZA, 6 de 7 PDF venían cifrados pero abrían sin clave (solo
+restricciones de impresión/copia). Por eso se prueba primero sin clave.
+
 Orden de prueba:
+0. Sin clave.
 1. Cédula ya conocida del remitente (directorio).
 2. Cédulas escritas en el correo, primero las que están en la liquidación.
 3. Cédulas de la liquidación ordenadas por parecido con el nombre del remitente.
@@ -45,14 +49,40 @@ def candidatos_clave(
             agregar(cedula)
     for cedula in en_texto:
         agregar(cedula)
-    por_nombre = sorted(
-        expectativas.values(),
-        key=lambda e: fuzz.token_sort_ratio(e.nombre.lower(), (nombre_remitente or "").lower()),
-        reverse=True,
-    )
+    por_nombre = sorted(expectativas.values(),
+                        key=lambda e: puntaje_nombre(e.nombre, nombre_remitente or ""), reverse=True)
     for exp in por_nombre:
         agregar(exp.cedula)
     return orden
+
+
+def _norm(texto: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode()
+    return " ".join(t.lower().split())
+
+
+def puntaje_nombre(nombre_base: str, nombre_otro: str) -> float:
+    """Parecido entre un nombre completo de la Base y un nombre corto o con errores.
+
+    'Ana Gmez' vs 'Ana María Gómez' y 'Juliana Lozano' vs 'Marion Juliana Lozano Muñoz'
+    deben puntuar alto; token_set_ratio tolera palabras de más y partial errores de tipeo.
+    """
+    a, b = _norm(nombre_base), _norm(nombre_otro)
+    return 0.6 * fuzz.token_set_ratio(a, b) + 0.4 * fuzz.token_sort_ratio(a, b)
+
+
+def identificar(nombre: str, expectativas: dict[str, Expectativa],
+                minimo: float = 70, margen: float = 8) -> str | None:
+    """Cédula de la Base cuyo nombre se parece al dado; None si no hay o es ambiguo."""
+    if not (nombre or "").strip() or not expectativas:
+        return None
+    ranking = sorted(((puntaje_nombre(e.nombre, nombre), c) for c, e in expectativas.items()), reverse=True)
+    mejor = ranking[0]
+    segundo = ranking[1][0] if len(ranking) > 1 else 0
+    if mejor[0] >= minimo and mejor[0] - segundo >= margen:
+        return mejor[1]
+    return None
 
 
 def abrir_con_clave(ruta_pdf: str, candidatos: list[str]):

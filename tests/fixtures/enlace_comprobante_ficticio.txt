@@ -1,0 +1,16 @@
+Información de la Planilla Pagada
+Nit de comercio Operador de Información 900000000-0
+Razón Social del Operador de Información Enlace Operativo
+Descripción Pago de SuAporte
+Fecha 2026-06-03, 02:52:20 PM
+Periodo de Cotización Otros Riesgos mayo de 2026
+Periodo de Cotización Para Salud junio de 2026
+Empresa PERSONA FICTICIA DE PRUEBA
+CEDULA CIUDADANIA CC 1000000099
+Referencia de Pago/ Número Planilla 80000001
+Tipo de Planilla E
+Banco (0000) - BANCO DE PRUEBA
+Valor $ 622.400
+Estado de la Transacción Aprobada
+SubTotales: $ 621.600 $ 800
+Total a Pagar: $ 622.400
