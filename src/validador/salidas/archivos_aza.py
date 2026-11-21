@@ -36,8 +36,8 @@ def escribir_base(original: str | Path, mes: Mes, destino: str | Path) -> Path:
     for fila in hoja.iter_rows(min_row=fila_enc + 1):
         cedula = limpiar_cedula(fila[pos["cedula"]].value) if fila[pos["cedula"]].value else None
         res = mes.estados.get(cedula or "")
-        if res is None:
-            continue
+        if res is None or res.estado == Estado.ESPERADO:
+            continue  # ESPERADO es interno: antes del corte la fila queda como la dejó la analista
         def poner(campo, valor):
             if campo in pos:
                 hoja.cell(fila[0].row, pos[campo] + 1, valor)

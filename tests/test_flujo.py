@@ -128,3 +128,89 @@ def test_correos_con_causales_del_procedimiento(tmp_path):
     # los estados que habilitan no generan correo
     assert correos.redactar(mes.estados["1000000001"], mes.expectativas["1000000001"], mes.periodo,
                             mes.fecha_limite) is None
+
+
+# --- PDF con contraseña que no abre con ninguna cédula (procedimiento 4.3, código L-04) ---
+
+def _mes_ficticio():
+    from validador.conciliacion import Mes
+    exps = {"1000000001": Expectativa(cedula="1000000001", nombre="Ana María Gómez Ficticia", base_rtte=5_000_000,
+                                      correo="ana@ejemplo.com"),
+            "1000000002": Expectativa(cedula="1000000002", nombre="Carlos Pérez Ficticio", base_rtte=4_000_000,
+                                      correo=None)}
+    return Mes(periodo="2026-10", expectativas=exps)
+
+
+def test_pdf_sin_abrir_identificado_por_nombre_va_a_revision_y_pide_clave():
+    mes = _mes_ficticio()
+    cedula, r = mes.recibir_sin_abrir(remitente="Ana Gómez", recibido=date(2026, 11, 4), archivo="planilla.pdf")
+    assert cedula == "1000000001"
+    assert (r.estado, r.codigo_error, r.ibc_requerido) == (Estado.REVISION_MANUAL, "L-04", 2_000_000)
+    assert mes.estados["1000000001"].indicador == 0 and not mes.estados["1000000001"].habilita
+    mes.cerrar_corte(mes.fecha_limite)
+    assert mes.estados["1000000001"].estado == Estado.REVISION_MANUAL   # no pasa a NO ENVIÓ
+    pedidos = [b for b in correos.borradores(mes) if b["causal"] == "4.3"]
+    assert len(pedidos) == 1
+    b = pedidos[0]
+    assert b["para"] == "ana@ejemplo.com" and b["cedula"] == "1000000001"
+    assert b["cuerpo"].startswith("Hola Ana:") and "contraseña" in b["cuerpo"] and "09/11/2026" in b["cuerpo"]
+    assert any(l["cedula"] == "1000000001" and "planilla.pdf" in l["detalle"] for l in mes.bitacora)
+
+
+def test_pdf_sin_abrir_identificado_por_direccion_de_correo():
+    mes = _mes_ficticio()
+    cedula, _ = mes.recibir_sin_abrir(remitente="Nombre Que No Se Parece", correo_remitente="ANA@ejemplo.com")
+    assert cedula == "1000000001"
+
+
+def test_pdf_sin_abrir_sin_correo_en_la_base_responde_al_remitente():
+    mes = _mes_ficticio()
+    mes.recibir_sin_abrir(remitente="Carlos Pérez", correo_remitente="carlos.personal@ejemplo.com")
+    b = next(b for b in correos.borradores(mes) if b["cedula"] == "1000000002")
+    assert b["causal"] == "4.3" and b["para"] == "carlos.personal@ejemplo.com"
+
+
+def test_pdf_sin_abrir_de_alguien_que_no_esta_en_la_base(tmp_path):
+    from validador.salidas import excel_maestro
+    mes = _mes_ficticio()
+    cedula, r = mes.recibir_sin_abrir(remitente="Persona Desconocida", correo_remitente="otra@ejemplo.com",
+                                      archivo="x.pdf")
+    assert cedula is None and r.codigo_error == "L-04"
+    assert all(e.estado == Estado.ESPERADO for e in mes.estados.values())   # no se asigna a nadie
+    b = next(b for b in correos.borradores(mes) if b["causal"] == "4.3")
+    assert b["cedula"] == "" and b["para"] == "otra@ejemplo.com" and b["cuerpo"].startswith("Hola Persona:")
+    hoja = load_workbook(excel_maestro.escribir(mes, tmp_path / "c.xlsx"))["Control"]
+    ultima = [c.value for c in hoja[hoja.max_row]]
+    assert ultima[1] == "SIN IDENTIFICAR: Persona Desconocida" and ultima[16] == "REVISIÓN MANUAL"
+    assert "L-04" in ultima[19]
+
+
+def test_pdf_sin_abrir_sin_nombre_ni_correo_queda_para_completar_a_mano():
+    mes = _mes_ficticio()
+    mes.recibir_sin_abrir(archivo="adjunto.pdf")
+    b = next(b for b in correos.borradores(mes) if b["causal"] == "4.3")
+    assert b["para"] == "" and b["cuerpo"].startswith("Hola:")
+
+
+def test_pdf_sin_abrir_no_reemplaza_una_planilla_ya_validada():
+    mes = _mes_ficticio()
+    mes.recibir_texto(demo.texto_suaporte("Ana María Gómez Ficticia", "1000000001", 2_000_000),
+                      recibido=date(2026, 11, 4), remitente="Ana Gómez")
+    assert mes.estados["1000000001"].estado == Estado.OK
+    mes.recibir_sin_abrir(remitente="Ana Gómez", recibido=date(2026, 11, 5))
+    assert mes.estados["1000000001"].estado == Estado.OK
+    assert not [b for b in correos.borradores(mes) if b["causal"] == "4.3"]
+
+
+def test_base_diligenciada_antes_del_corte_no_escribe_esperado(tmp_path):
+    from validador.conciliacion import Mes
+    from validador.salidas import archivos_aza
+    archivo = demo.generar(tmp_path)
+    mes = Mes(periodo="2026-10", expectativas=cargar_base(archivo))
+    mes.recibir_texto(demo.texto_suaporte("Prestador01 Ficticio Prueba", "1000000001", 1_000_000),
+                      recibido=date(2026, 11, 4), remitente="Prestador01 Ficticio")
+    copia = archivos_aza.escribir_base(archivo, mes, tmp_path / "copia.xlsx")
+    estados = [r[16] for r in load_workbook(copia).worksheets[0].iter_rows(min_row=3, values_only=True)]
+    assert "ESPERADO" not in estados
+    assert estados[0] == "PENDIENTE AJUSTE" and estados[1] is None
+    assert load_workbook(archivo).worksheets[0]["Q3"].value is None   # el original no se toca

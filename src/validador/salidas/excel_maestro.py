@@ -34,6 +34,15 @@ def escribir(mes: Mes, ruta: str | Path) -> Path:
             r.estado.value, r.indicador, "sí" if r.habilita else "no", r.motivo, " ".join(r.observaciones),
             s.operador if s else None, s.numero_planilla if s else None,
         ])
+    # Procedimiento: toda planilla recibida cruza con una cédula o va a REVISIÓN MANUAL. Las que no
+    # cruzan se agregan al final para que la analista las vea y decida.
+    for caso in mes.sin_identificar:
+        r = caso["resultado"]
+        fila = {"Cédula": "", "Nombre": f"SIN IDENTIFICAR: {caso['remitente'] or caso['correo'] or '?'}",
+                "Fecha del correo": caso["fecha"], "Estado": r.estado.value, "Indicador": None,
+                "Habilita pago": "no", "Motivo": f"{r.codigo_error} {r.motivo}",
+                "Observaciones": f"Archivo: {caso['archivo']}. Correo: {caso['correo'] or 'desconocido'}."}
+        control.append([fila.get(c) for c in COLUMNAS])
 
     bitacora = libro.create_sheet("Bitácora")
     bitacora.append(["Fecha", "Cédula", "Evento", "Detalle"])

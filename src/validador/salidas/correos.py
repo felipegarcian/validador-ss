@@ -32,9 +32,21 @@ PLANTILLAS: dict[str, tuple[str, str]] = {
     "7.5": ("Seguridad Social – clase de riesgo ARL",
             "en tu planilla del periodo {mes} la ARL se pagó con tarifa {tarifa_pagada} %. A partir del próximo pago "
             "debes cotizar con riesgo {riesgo}, que es el que corresponde a tu actividad."),
+    # Procedimiento 4.3: "se le pide la contraseña al asesor". El procedimiento no trae el texto;
+    # esta redacción es una propuesta del equipo.
+    "4.3": ("Seguridad Social {Mes} – no pudimos abrir tu planilla",
+            "recibimos tu planilla del periodo {mes}, pero el PDF tiene contraseña y no abrió con tu número de "
+            "cédula. Por favor respóndenos con la contraseña del archivo o envía de nuevo la planilla sin "
+            "contraseña, a más tardar el {fecha_limite}."),
 }
 CAUSAL_POR_ESTADO = {Estado.OTRO_PERIODO: "7.1", Estado.PLANILLA_INCORRECTA: "7.2",
                      Estado.PENDIENTE_AJUSTE: "7.3", Estado.NO_ENVIO: "7.4"}
+# Casos de REVISIÓN MANUAL que sí llevan correo, según el código de error.
+CAUSAL_POR_CODIGO = {"L-04": "4.3"}
+
+
+def causal_de(resultado: Resultado) -> str | None:
+    return CAUSAL_POR_ESTADO.get(resultado.estado) or CAUSAL_POR_CODIGO.get(resultado.codigo_error or "")
 
 
 def pesos(valor: int | None) -> str:
@@ -51,12 +63,12 @@ def redactar(resultado: Resultado, esperado: Expectativa, periodo: str, fecha_li
              plantillas: dict[str, tuple[str, str]] | None = None) -> tuple[str, str] | None:
     """Devuelve (asunto, cuerpo) o None si el estado no lleva correo."""
     reglas = reglas or Reglas()
-    causal = causal or CAUSAL_POR_ESTADO.get(resultado.estado)
+    causal = causal or causal_de(resultado)
     if causal is None:
         return None
     asunto, cuerpo = (plantillas or PLANTILLAS)[causal]
     mes = nombre_mes(periodo)
-    datos = dict(nombre=esperado.nombre.split()[0].title(), mes=mes, Mes=MESES[int(periodo[5:]) - 1].title(),
+    datos = dict(nombre=(esperado.nombre.split() or [""])[0].title(), mes=mes, Mes=MESES[int(periodo[5:]) - 1].title(),
                  fecha_limite=fecha_limite.strftime("%d/%m/%Y"), motivo=resultado.motivo.rstrip(".").lower(),
                  periodo_recibido=nombre_mes(soporte.periodo) if soporte and soporte.periodo else "otro",
                  base=pesos(esperado.base_rtte), ibc_requerido=pesos(resultado.ibc_requerido),
@@ -68,7 +80,8 @@ def redactar(resultado: Resultado, esperado: Expectativa, periodo: str, fecha_li
                      p_arl=pesos(t["ARL"]["pagado"]), a_pen=pesos(t["Pensión"]["ajuste"]),
                      a_sal=pesos(t["Salud"]["ajuste"]), a_arl=pesos(t["ARL"]["ajuste"]),
                      a_tot=pesos(t["Total"]["ajuste"]))
-    return asunto.format(**datos), f"Hola {datos['nombre']}: {cuerpo.format(**datos)}\n\nGestión Humana · AZA Gestión del Riesgo"
+    saludo = f"Hola {datos['nombre']}:" if datos["nombre"] else "Hola:"
+    return asunto.format(**datos), f"{saludo} {cuerpo.format(**datos)}\n\nGestión Humana · AZA Gestión del Riesgo"
 
 
 def borradores(mes, plantillas: dict[str, tuple[str, str]] | None = None) -> list[dict]:
@@ -77,9 +90,17 @@ def borradores(mes, plantillas: dict[str, tuple[str, str]] | None = None) -> lis
     for cedula, r in mes.estados.items():
         exp = mes.expectativas[cedula]
         soporte = (mes.soportes.get(cedula) or [None])[-1]
-        for causal in [CAUSAL_POR_ESTADO.get(r.estado), "7.5" if r.aviso_riesgo else None]:
+        for causal in [causal_de(r), "7.5" if r.aviso_riesgo else None]:
             if causal:
                 asunto, cuerpo = redactar(r, exp, mes.periodo, mes.fecha_limite, soporte, mes.reglas, causal, plantillas)
-                salida.append({"cedula": cedula, "para": exp.correo or "", "causal": causal,
-                               "asunto": asunto, "cuerpo": cuerpo})
+                salida.append({"cedula": cedula, "para": exp.correo or mes.remitentes.get(cedula, ""),
+                               "causal": causal, "asunto": asunto, "cuerpo": cuerpo})
+    # Sin identificar: no hay fila en la Base, así que se responde a quien envió el correo.
+    for caso in mes.sin_identificar:
+        r = caso["resultado"]
+        causal = causal_de(r)
+        if causal:
+            anonimo = Expectativa(cedula="", nombre=caso["remitente"] or "")
+            asunto, cuerpo = redactar(r, anonimo, mes.periodo, mes.fecha_limite, None, mes.reglas, causal, plantillas)
+            salida.append({"cedula": "", "para": caso["correo"], "causal": causal, "asunto": asunto, "cuerpo": cuerpo})
     return salida
