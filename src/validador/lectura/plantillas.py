@@ -137,3 +137,70 @@ def leer(texto: str) -> Soporte | None:
         if plantilla.reconoce(texto):
             return plantilla.extraer(texto)
     return None
+
+
+# --- Plantillas en YAML (propuestas por Claude, probadas y aprobadas por TI) ------------------
+
+TIPOS = {
+    "texto": lambda v: v.strip(),
+    "pesos": lambda v: _numero(v),
+    "decimal": lambda v: float(v.replace(".", "").replace(",", ".")) if "," in v else float(v),
+    "periodo_texto": _periodo_texto,
+    "periodo_iso": lambda v: v if re.fullmatch(r"\d{4}-\d{2}", v) else None,
+    "fecha_dmy": lambda v: date(int(v[6:10]), int(v[3:5]), int(v[0:2])),
+    "fecha_iso": lambda v: date.fromisoformat(v[:10]),
+}
+CAMPOS_PERMITIDOS = set(Soporte.model_fields) - {"origen_lectura"}
+
+
+def plantilla_desde_yaml(definicion: dict) -> Plantilla:
+    """Valida la definición y la convierte en Plantilla. Lanza ValueError con un motivo claro."""
+    for clave in ("operador", "reconoce", "campos"):
+        if not definicion.get(clave):
+            raise ValueError(f"La plantilla no tiene «{clave}».")
+    reconoce = [str(x) for x in definicion["reconoce"]]
+    campos = {}
+    for campo, regla in definicion["campos"].items():
+        if campo not in CAMPOS_PERMITIDOS:
+            raise ValueError(f"Campo desconocido «{campo}».")
+        tipo = regla.get("tipo", "texto")
+        if tipo != "existe" and tipo not in TIPOS:
+            raise ValueError(f"Tipo desconocido «{tipo}» en «{campo}».")
+        patron = re.compile(regla["regex"], re.IGNORECASE | re.MULTILINE)
+        if tipo != "existe" and patron.groups != 1:
+            raise ValueError(f"El regex de «{campo}» debe tener exactamente un grupo de captura.")
+        campos[campo] = (patron, tipo)
+
+    def extraer(texto: str) -> Soporte:
+        datos: dict = {"operador": definicion["operador"]}
+        for campo, (patron, tipo) in campos.items():
+            m = patron.search(texto)
+            if tipo == "existe":
+                datos[campo] = bool(m)
+            elif m:
+                try:
+                    datos[campo] = TIPOS[tipo](m.group(1))
+                except (ValueError, IndexError):
+                    datos[campo] = None
+        return Soporte(**datos)
+
+    return Plantilla(definicion["operador"], lambda t: all(r in t for r in reconoce), extraer)
+
+
+def cargar_plantillas_yaml(carpeta: str | None = None, incluir_borradores: bool = False) -> list[Plantilla]:
+    """Lee plantillas_operador/*.yaml. Solo las de estado «activa» entran al carril 1."""
+    import yaml
+    from pathlib import Path
+    base = Path(carpeta) if carpeta else Path(__file__).resolve().parents[3] / "plantillas_operador"
+    salida = []
+    for archivo in sorted(base.glob("*.yaml")):
+        definicion = yaml.safe_load(archivo.read_text(encoding="utf-8")) or {}
+        if definicion.get("estado") == "activa" or incluir_borradores:
+            salida.append(plantilla_desde_yaml(definicion))
+    return salida
+
+
+try:
+    REGISTRO.extend(cargar_plantillas_yaml())
+except Exception:  # una plantilla mal escrita no debe tumbar el motor: se reporta en las pruebas
+    pass
