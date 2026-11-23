@@ -4,7 +4,7 @@
 
 Herramienta para validar soportes de pago de seguridad social frente a la liquidación mensual y generar un Excel maestro auditable junto con borradores de correo para revisión. Hace parte del reto **Validación de soportes de pago de seguridad social** de **Inteligencia artificial**, desarrollado para AZA Gestión del Riesgo.
 
-> **Estado del proyecto:** el flujo local de validación, generación del Excel y borradores funciona con datos ficticios. La conexión con Office 365, la inspección asistida por IA y el tablero de aprobación todavía no están implementados.
+> **Estado del proyecto:** el flujo local de validación, generación del Excel y borradores funciona con datos ficticios. El carril 2 con Claude funciona sin API (copiar y pegar guiado) y el motor puede trabajar sobre una carpeta de SharePoint alimentada por Power Automate. Falta probar los flujos de Power Automate en el tenant de AZA y construir el tablero de aprobación.
 
 ## Tabla de contenido
 
@@ -67,11 +67,11 @@ El envío de correos requiere aprobación humana. El diagrama describe el proces
 |---|---|
 | Esquema de datos, reglas y estados de validación | Implementado y probado |
 | Cálculo de días hábiles y festivos de Colombia | Implementado y probado |
-| Lectura de planillas mediante plantillas | Funciona con formatos ficticios; faltan plantillas de operadores |
+| Lectura de planillas mediante plantillas | SuAporte y Compensar en Python; nuevas plantillas en YAML (`plantillas_operador/`) que Claude propone y TI prueba con `scripts/probar_plantilla.py` |
 | Apertura de PDF con contraseña y orden de claves | Implementado y probado |
 | Excel maestro y borradores de correo | Funcionan en local |
-| Inspección asistida por Claude (carril 2) | Diseñada; no implementada |
-| Integración con Office 365 | Diseñada; no implementada |
+| Inspección asistida por Claude (carril 2) | Implementada sin API: paquete con datos personales tapados para el Claude de AZA ([guía](docs/CARRIL2_CLAUDE.md)) |
+| Integración con Office 365 | Adaptador de carpeta implementado; flujos de Power Automate documentados, pendientes de montar en AZA ([guía](docs/AUTOMATIZACION_O365.md)) |
 | Tablero para aprobación de correos | Prototipo visual aparte; no implementado |
 
 La validación se realiza con reglas deterministas. Los parámetros del proceso, como la tolerancia y el día de corte, se mantienen en `config/reglas.yaml`.
@@ -170,4 +170,6 @@ Este proyecto se distribuye bajo la licencia [MIT](LICENSE).
 - [Instalación en la infraestructura de AZA](docs/INSTALACION.md)
 - [Plan de pruebas](docs/PRUEBAS.md)
 - [Operación y soporte](docs/OPERACION.md)
+- [Carril 2 con el Claude de AZA](docs/CARRIL2_CLAUDE.md)
+- [Disparadores automáticos con Power Automate](docs/AUTOMATIZACION_O365.md)
 - [Guía para plantillas de operadores](plantillas_operador/README.md)

@@ -1,6 +1,7 @@
-"""Carril 2: inspección con Claude cuando ninguna plantilla reconoce el PDF.
+"""Carril 2 automático por API (opcional, para más adelante).
 
-PENDIENTE DE IMPLEMENTAR. Diseño acordado:
+Hoy el carril 2 funciona sin API: ver lectura/carril2_asistido.py y docs/CARRIL2_CLAUDE.md.
+Este módulo queda para cuando AZA tenga acceso por API. Diseño:
 
 Paso 1, identificar: Claude recibe solo el PDF que falló y devuelve los campos del
 esquema Soporte. Pasa por el mismo autochequeo y las mismas reglas. Queda marcado
