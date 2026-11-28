@@ -7,7 +7,7 @@ from datetime import date
 from . import calendario
 from .esquema import Estado, Expectativa, Reglas, Resultado, Soporte
 from .lectura import plantillas
-from .lectura.claves import identificar
+from .lectura.claves import cedula_en_texto, identificar
 from .reglas import evaluar
 
 
@@ -48,7 +48,8 @@ class Mes:
         if soporte is None:
             resultado = Resultado(estado=Estado.REVISION_MANUAL, codigo_error="L-01",
                                   motivo="Ninguna plantilla reconoce este formato.")
-            cedula = identificar(remitente, self.expectativas) if remitente else None
+            cedula = cedula_en_texto(texto, self.expectativas) or (
+                identificar(remitente, self.expectativas) if remitente else None)
             if cedula and self.estados[cedula].estado == Estado.ESPERADO:
                 self.estados[cedula] = resultado
             self._anotar(cedula, "LECTURA", resultado.motivo, recibido)

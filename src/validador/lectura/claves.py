@@ -97,3 +97,11 @@ def abrir_con_clave(ruta_pdf: str, candidatos: list[str]):
         except Exception:
             continue
     return None, None
+
+
+def cedula_en_texto(texto: str, expectativas: dict[str, Expectativa]) -> str | None:
+    """Cédula de la Base que aparece en el texto del PDF (sin puntos ni espacios). Solo si es una."""
+    import re
+    digitos = re.sub(r"[.\s]", "", texto or "")
+    halladas = [c for c in expectativas if len(c) >= 6 and re.search(rf"(?<!\d){c}(?!\d)", digitos)]
+    return halladas[0] if len(halladas) == 1 else None
