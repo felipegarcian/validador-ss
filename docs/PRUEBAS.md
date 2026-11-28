@@ -15,6 +15,8 @@
 | Orden de claves para PDF con contraseña | `tests/test_flujo.py` |
 | Ciclo completo: liquidación, soportes, corte, Excel maestro | `tests/test_flujo.py` |
 | Borrador de correo con las cifras de la validación | `tests/test_flujo.py` |
+| Contrato JSON del tablero: cuadra con el Excel, enlaza correos, es estable | `tests/test_tablero.py` |
+| Verificador de cifras: detecta cifras cambiadas, borradas o inventadas | `tests/test_tablero.py` |
 
 GitHub las corre en cada cambio (`.github/workflows/pruebas.yml`).
 
@@ -52,4 +54,5 @@ Los umbrales son una propuesta del equipo.
 ## Lo que todavía no tiene prueba
 
 Lectura de PDF reales, conexión a Office 365, escritura en un Excel abierto, inspección con
-Claude y tablero.
+Claude y tablero. Las pruebas previstas para el tablero y la capa de Claude están en
+[TABLERO.md](TABLERO.md), sección 8.

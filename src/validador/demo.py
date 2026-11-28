@@ -15,7 +15,7 @@ from openpyxl import Workbook
 
 from .conciliacion import Mes
 from .expectativas import cargar_base
-from .salidas import archivos_aza, correos, excel_maestro
+from .salidas import archivos_aza, correos, excel_maestro, tablero
 
 PERIODO = "2026-10"
 MESES_TXT = {"2026-09": "septiembre de 2026", "2026-10": "octubre de 2026", "2026-11": "noviembre de 2026"}
@@ -122,6 +122,7 @@ def correr(raiz: Path) -> Mes:
     excel_maestro.escribir(mes, salida / f"Control_SS_{periodo}.xlsx")
     archivos_aza.escribir_base(archivo, mes, salida / f"Base para SS {periodo} (diligenciada).xlsx")
     archivos_aza.escribir_formato_ajuste(mes, salida / f"Formato Ajuste Seguridad social {periodo}.xlsx")
+    tablero.escribir(mes, salida / f"tablero_{periodo}.json")
     return mes
 
 

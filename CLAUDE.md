@@ -35,6 +35,11 @@ en `docs/OPERACION.md`. Reproduce con un soporte ficticio antes de cambiar códi
 **Cambiar una regla.** Los valores están en `config/reglas.yaml`. Si cambia la lógica, edita
 `reglas.py` y agrega la prueba del caso nuevo en `tests/test_reglas.py`.
 
+**Trabajar en el tablero o en la capa de Claude.** Sigue `docs/TABLERO.md`, fase por fase. El tablero
+solo lee el contrato `tablero_AAAA-MM.json`; Claude solo explica o resume, con datos seudonimizados,
+pasa por el verificador de cifras y siempre tiene texto de respaldo. Las pruebas usan un cliente
+falso: nunca llaman a la API.
+
 ## Comandos
 
 ```bash

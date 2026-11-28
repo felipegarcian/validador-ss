@@ -17,7 +17,8 @@ para quien debe corregir.
 | Excel maestro y borradores de correo | Funciona en local |
 | Inspección con Claude (carril 2) | Diseñado, sin implementar |
 | Conexión a Office 365 | Diseñado, sin implementar |
-| Tablero con aprobación de correos | Prototipo visual aparte, sin implementar |
+| Datos del tablero (`tablero_AAAA-MM.json`) y verificador de cifras | Funciona, con pruebas |
+| Tablero con aprobación de correos | Prototipo visual aparte; estrategia y paso a paso en `docs/TABLERO.md` |
 
 ## Empezar
 
@@ -42,7 +43,7 @@ src/validador/
   conciliacion.py     Estado del mes, bitácora y corte
   lectura/            plantillas (carril 1), claves de PDF, inspección con Claude (carril 2)
   adaptadores/        local (demo) y Office 365
-  salidas/            Excel maestro y borradores de correo
+  salidas/            Excel maestro, borradores de correo, datos del tablero y verificador de cifras
 config/reglas.yaml    Tolerancia, día de corte y columnas de la liquidación
 plantillas_operador/  Cómo agregar la plantilla de un operador
 docs/                 Instalación, pruebas, operación y soporte
@@ -60,3 +61,4 @@ tests/                Pruebas automáticas
 - [Instalación en la infraestructura de AZA](docs/INSTALACION.md)
 - [Plan de pruebas](docs/PRUEBAS.md)
 - [Operación y soporte](docs/OPERACION.md)
+- [Tablero y Claude: estrategia e implementación](docs/TABLERO.md)

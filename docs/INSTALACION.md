@@ -57,12 +57,16 @@ con la cuenta de servicio.
 Se entra con la cuenta de correo de la empresa. Roles: Dirección (consulta), Gestión Humana y
 Contabilidad (editan y aprueban correos), Administrador (reglas y plantillas). Para enviar los
 correos aprobados, la aplicación necesita además permiso de envío desde el buzón compartido.
-Pendiente definir dónde se publica: Power Apps, página de SharePoint o aplicación web.
+Propuesta: página de SharePoint con la lista «Correos SS» en la v1 y Power Apps en la v2. El motor
+envía los correos aprobados después de verificar que las cifras no cambiaron. Arquitectura,
+roles y paso a paso en [TABLERO.md](TABLERO.md).
 
 ## Carril 2: Claude
 
 Apagado por defecto. Para encenderlo se necesita una clave de la API de Anthropic y la
 aprobación de AZA sobre el envío de documentos. Solo se envía el PDF que ninguna plantilla leyó.
+Los usos de Claude en el tablero (resumen del mes y explicación de casos, sin datos personales)
+se describen en [TABLERO.md](TABLERO.md), sección 5.
 
 ## Lo que la instalación no pide
 
