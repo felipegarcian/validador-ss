@@ -48,6 +48,12 @@ Así ningún correo sale sin aprobación y no hay que construir un tablero para 
   habilitados y errores.
 - Si la hora de `ejecucion` tiene más de 2 horas, publicar **«El motor no ha corrido»**.
 
+## Flujo 4 · Publicar el tablero (siguiente paso)
+
+El motor deja en cada ejecución `Salidas/tablero_AAAA-MM.json`. Un cuarto flujo lo pasa a las
+listas «Casos SS» e «Indicadores SS» para la página del tablero. Pasos y permisos en
+[TABLERO.md](TABLERO.md), Fase 2, paso 11.
+
 ## El motor
 
 En el equipo con la biblioteca sincronizada, una tarea programada de Windows cada 10

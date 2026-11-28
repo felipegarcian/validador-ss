@@ -54,15 +54,22 @@ con la cuenta de servicio.
 
 ## Tablero
 
-Se entra con la cuenta de correo de la empresa. Roles: Dirección (consulta), Gestión Humana y
-Contabilidad (editan y aprueban correos), Administrador (reglas y plantillas). Para enviar los
-correos aprobados, la aplicación necesita además permiso de envío desde el buzón compartido.
-Pendiente definir dónde se publica: Power Apps, página de SharePoint o aplicación web.
+Se entra con la cuenta de correo de la empresa. Roles: Dirección (consulta), Gestión Humana
+(aprueba correos y atiende el carril 2), Contabilidad (consulta habilitados) y Administrador
+(reglas y plantillas). Los correos se aprueban y envían con el Flujo 2 de Power Automate
+([AUTOMATIZACION_O365.md](AUTOMATIZACION_O365.md)), así que el motor no necesita permiso de envío.
+El motor deja `Salidas/tablero_AAAA-MM.json` en cada ejecución; un Flujo 4 lo publica en listas
+de SharePoint para una página por rol (v1) y más adelante en Power Apps (v2). Arquitectura,
+roles y paso a paso en [TABLERO.md](TABLERO.md).
 
 ## Carril 2: Claude
 
-Apagado por defecto. Para encenderlo se necesita una clave de la API de Anthropic y la
-aprobación de AZA sobre el envío de documentos. Solo se envía el PDF que ninguna plantilla leyó.
+Funciona sin API con el plan de Claude que AZA ya tiene: el motor arma un paquete con los
+datos personales tapados y la analista lo pega en el proyecto de Claude
+([CARRIL2_CLAUDE.md](CARRIL2_CLAUDE.md)). La variante con API (`CLAUDE_HABILITADO=1` y
+`ANTHROPIC_API_KEY`) sigue apagada por defecto y requiere aprobación de AZA.
+Los usos de Claude en el tablero (resumen del mes y explicación de casos, sin datos personales)
+se describen en [TABLERO.md](TABLERO.md), sección 5.
 
 ## Lo que la instalación no pide
 

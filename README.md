@@ -72,7 +72,8 @@ El envío de correos requiere aprobación humana. El diagrama describe el proces
 | Excel maestro y borradores de correo | Funcionan en local |
 | Inspección asistida por Claude (carril 2) | Implementada sin API: paquete con datos personales tapados para el Claude de AZA ([guía](docs/CARRIL2_CLAUDE.md)) |
 | Integración con Office 365 | Adaptador de carpeta implementado; flujos de Power Automate documentados, pendientes de montar en AZA ([guía](docs/AUTOMATIZACION_O365.md)) |
-| Tablero para aprobación de correos | Prototipo visual aparte; no implementado |
+| Datos del tablero (`tablero_AAAA-MM.json`) y verificador de cifras | Implementado y probado; el adaptador de carpeta lo deja en `Salidas/` |
+| Tablero para aprobación de correos | Prototipo visual aparte; estrategia y paso a paso en [docs/TABLERO.md](docs/TABLERO.md) |
 
 La validación se realiza con reglas deterministas. Los parámetros del proceso, como la tolerancia y el día de corte, se mantienen en `config/reglas.yaml`.
 
@@ -138,7 +139,7 @@ src/validador/
   conciliacion.py     Estado mensual, bitácora y corte
   lectura/            Lectura por plantillas, claves de PDF e inspección
   adaptadores/        Adaptadores locales y previstos para Office 365
-  salidas/            Excel maestro y borradores de correo
+  salidas/            Excel maestro, borradores de correo, datos del tablero y verificador de cifras
 config/               Parámetros del proceso
 plantillas_operador/  Guía para agregar plantillas de operadores
 docs/                 Instalación, pruebas, operación y soporte
@@ -173,3 +174,4 @@ Este proyecto se distribuye bajo la licencia [MIT](LICENSE).
 - [Carril 2 con el Claude de AZA](docs/CARRIL2_CLAUDE.md)
 - [Disparadores automáticos con Power Automate](docs/AUTOMATIZACION_O365.md)
 - [Guía para plantillas de operadores](plantillas_operador/README.md)
+- [Tablero y Claude: estrategia e implementación](docs/TABLERO.md)

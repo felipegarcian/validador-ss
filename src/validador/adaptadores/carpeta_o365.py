@@ -19,7 +19,8 @@ siguiente deja todo igual.
                                         la analista pega respuesta_claude.txt
     Correos/pendientes/<id>-<causal>.json   borradores para el Flujo 2
     Correos/enviados/                   Power Automate los mueve aquí
-    Salidas/                            Control, Base diligenciada, Formato de Ajuste
+    Salidas/                            Control, Base diligenciada, Formato de Ajuste,
+                                        tablero_AAAA-MM.json (datos del tablero)
     salud.json                          última ejecución, conteos y errores
 """
 from __future__ import annotations
@@ -35,7 +36,7 @@ from ..expectativas import cargar_base
 from ..lectura import carril2_asistido as c2
 from ..lectura import plantillas
 from ..lectura.claves import abrir_con_clave, candidatos_clave, cedula_en_texto, identificar
-from ..salidas import archivos_aza, correos, excel_maestro
+from ..salidas import archivos_aza, correos, excel_maestro, tablero
 
 CARPETAS = ["01_Entrada", "02_Procesados", "03_Por_revisar", "Correos/pendientes", "Correos/enviados", "Salidas"]
 
@@ -134,6 +135,7 @@ def _salidas(raiz: Path, base: Path, mes: Mes, salud: dict) -> None:
     excel_maestro.escribir(mes, sal / f"Control_SS_{mes.periodo}.xlsx")
     archivos_aza.escribir_base(base, mes, sal / f"{base.stem} (diligenciada).xlsx")
     archivos_aza.escribir_formato_ajuste(mes, sal / f"Formato Ajuste Seguridad social {mes.periodo}.xlsx")
+    tablero.escribir(mes, sal / f"tablero_{mes.periodo}.json")  # docs/TABLERO.md
     ya = {p.stem for p in (raiz / "Correos").rglob("*.json")}
     for b in correos.borradores(mes):
         nombre = f"{b['cedula']}-{b['causal'].replace('.', '_')}-{mes.periodo}"

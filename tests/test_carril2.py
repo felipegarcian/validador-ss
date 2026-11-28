@@ -136,6 +136,9 @@ def test_carpeta_de_punta_a_punta_con_carril_2(tmp_path):
     assert (raiz / "Salidas" / "Control_SS_2026-10.xlsx").exists()
     salud = json.loads((raiz / "salud.json").read_text(encoding="utf-8"))
     assert salud["habilitados"] == 2
+    datos = json.loads((raiz / "Salidas" / "tablero_2026-10.json").read_text(encoding="utf-8"))
+    assert datos["indicadores"]["habilitados"]["cumplen"] == 2
+    assert datos["indicadores"]["por_origen"].get("ia") == 1   # el caso que leyó Claude se ve en el tablero
 
     # Idempotente: otra corrida no duplica borradores
     antes = len(list((raiz / "Correos" / "pendientes").glob("*.json")))

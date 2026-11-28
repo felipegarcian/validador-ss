@@ -21,6 +21,15 @@ def n_esimo_dia_habil(anio: int, mes: int, n: int = 5) -> date:
         dia += timedelta(days=1)
 
 
+def dias_habiles_hasta(desde: date, hasta: date) -> int:
+    """Días hábiles después de `desde` y hasta `hasta` inclusive. 0 si ya pasó."""
+    dias, dia = 0, desde + timedelta(days=1)
+    while dia <= hasta:
+        dias += es_habil(dia)
+        dia += timedelta(days=1)
+    return dias
+
+
 def mes_siguiente(periodo: str) -> tuple[int, int]:
     """El soporte del período AAAA-MM se entrega en el mes siguiente."""
     anio, mes = (int(x) for x in periodo.split("-"))
